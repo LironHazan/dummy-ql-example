@@ -19,30 +19,23 @@ fn parse_quoted(input: &str) -> IResult<&str, String> {
     Ok(res)
 }
 
-fn and_parser(i: &str) -> IResult<&str, &str> {
-    tag("&&")(i)
-}
-fn or_parser(i: &str) -> IResult<&str, &str> {
-    tag("||")(i)
-}
-fn and_or_choice(i: &str) -> IResult<&str, &str> {
-    alt((and_parser, or_parser))(i)
-}
 
-fn base_parser(i: &str) -> IResult<&str, BaseOutput, Error<&str>> {
-    let f =  tag("foo");
-    let eq_op  =  tag("==");
+fn base_parser<'a>() -> impl FnMut(&'a str) -> IResult<&'a str, BaseOutput, Error<&'a str>> {
+    let f = tag("foo");
+    let eq_op = tag("==");
     let value = parse_quoted;
-    tuple((f, tag(" "), eq_op, tag(" "), value))(i)
-}
-
-fn sub_parser(i: &str) -> IResult<&str, (&str, BaseOutput), Error<&str>> {
-    tuple((tag(" "), base_parser))(i)
+    tuple((f, tag(" "), eq_op, tag(" "), value))
 }
 
 // The main parser/entry point
-pub fn dummy_parser(i: &str) -> IResult<&str, (BaseOutput, &str, &str, (&str, BaseOutput)), Error<&str>> {
-    tuple((base_parser, tag(" "), and_or_choice, sub_parser))(i)
+pub fn dummy_parser(
+    i: &str,
+) -> IResult<&str, (BaseOutput, &str, &str, (&str, BaseOutput)), Error<&str>> {
+    let and_parser = tag("&&");
+    let or_parser = tag("||");
+    let and_or_choice = alt((and_parser, or_parser));
+    let sub_parser = tuple((tag(" "), base_parser()));
+    tuple((base_parser(), tag(" "), and_or_choice, sub_parser))(i)
 }
 
 #[test]
