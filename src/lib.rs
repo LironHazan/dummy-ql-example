@@ -45,10 +45,9 @@ pub fn dummy_parser(i: &str) -> IResult<&str, (BaseOutput, &str, &str, (&str, Ba
     tuple((base_parser, tag(" "), and_or_choice, sub_parser))(i)
 }
 
-
 #[test]
 fn test_dummy_parser() {
-    let (_, res) = dummy_parser("foo == \"jj\" && foo == \"bazz\" ").unwrap();
+    let (_, res) = dummy_parser("foo == \"jj\" && foo == \"bazz\"").unwrap();
     let exp_tuple = (
         (
             "foo",
